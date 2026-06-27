@@ -10,13 +10,20 @@
 #include "Alvo.h"
 #include "Bolinha.h"
 #include "Jogador.h"
+#include "Estado.h"
 
 typedef struct GameWorld {
     Jogador jogador;
     Bolinha bolinha;
     Alvo *alvos;
+    estado estadoAtual;
+
+
     int lin;
     int col;
+    int larguraJogador;
+    int alturaJogador;
+    
 } GameWorld;
 
 /**
