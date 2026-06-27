@@ -7,6 +7,7 @@
 #pragma once
 
 #include "raylib/raylib.h"
+#include "Estado.h"
 
 typedef struct Bolinha {
     Vector2 centro;
@@ -15,5 +16,5 @@ typedef struct Bolinha {
     Color cor;
 } Bolinha;
 
-void atualizarBolinha( Bolinha *bolinha, float delta );
+void atualizarBolinha( Bolinha *bolinha, float delta, estado *e );
 void desenharBolinha( Bolinha *bolinha );

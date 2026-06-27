@@ -18,6 +18,7 @@
 #include "Bolinha.h"
 #include "GameWorld.h"
 #include "Jogador.h"
+#include "Estado.h"
 #include "ResourceManager.h"
 
 /**
@@ -34,15 +35,15 @@ GameWorld *createGameWorld( void ) {
 
     GameWorld *gw = (GameWorld*) malloc( sizeof( GameWorld ) );
 
-    int larguraJogador = 150;
-    int alturaJogador = 20;
+    gw->larguraJogador = 150;
+    gw->alturaJogador = 20;
 
     gw->jogador = (Jogador) {
         .ret = { 
-            GetScreenWidth() / 2 - larguraJogador / 2, 
-            GetScreenHeight() - 3 * alturaJogador, 
-            larguraJogador, 
-            alturaJogador
+            GetScreenWidth() / 2 - gw->larguraJogador / 2, 
+            GetScreenHeight() - 3 * gw->alturaJogador, 
+            gw->larguraJogador, 
+            gw->alturaJogador
         },
         .velocidadeBase = 200,
         .velocidadeAtual = 0,
@@ -58,6 +59,10 @@ GameWorld *createGameWorld( void ) {
         .vel = { 200, -200 },
         .cor = WHITE
     };
+
+    gw->estadoAtual = inicio;
+
+
 
     gw->lin = 10;
     gw->col = 6;
@@ -122,8 +127,24 @@ void destroyGameWorld( GameWorld *gw ) {
  */
 void updateGameWorld( GameWorld *gw, float delta ) {
     entradaJogador( &gw->jogador );
-    atualizarJogador( &gw->jogador, delta );
-    atualizarBolinha( &gw->bolinha, delta );
+    atualizarEstados ( &gw->estadoAtual );
+
+    if ( gw->estadoAtual == emJogo ) {
+        atualizarJogador( &gw->jogador, delta );
+        atualizarBolinha( &gw->bolinha, delta, &gw->estadoAtual );
+    }
+    if (  gw->estadoAtual == dano  ) {
+      
+        gw->jogador.velocidadeAtual = gw->jogador.velocidadeBase;
+        gw->jogador.ret.x = GetScreenWidth() / 2 - gw->larguraJogador / 2;
+        gw->jogador.ret.y = GetScreenHeight() - 3 * gw->alturaJogador;
+
+        gw->bolinha.centro.x = GetScreenWidth() / 2;
+        gw->bolinha.centro.y = gw->jogador.ret.y - gw->jogador.ret.width;        
+        gw->bolinha.vel.x = 200;
+        gw->bolinha.vel.y = -200;
+    }
+
     resolverColisaoBolinhaAlvos( &gw->bolinha, gw->alvos, gw->lin * gw->col );
     impactoJogador( &gw->jogador, &gw->bolinha );
 }
