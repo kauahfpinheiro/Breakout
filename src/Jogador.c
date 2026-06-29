@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdlib.h>
 
 #include "raylib/raylib.h"
@@ -42,7 +43,7 @@ void atualizarJogador( Jogador *j, float delta ) {
 }
 void impactoJogador( Jogador *j, Bolinha *b ) {
     if ( CheckCollisionCircleRec( b->centro, b->raio, j->ret ) ) {
-        b->vel.y *= -1;
+        b->vel =  b->vel;
     }
 }
 
@@ -51,4 +52,10 @@ void impactoJogador( Jogador *j, Bolinha *b ) {
  */
 void desenharJogador( Jogador *j ) {
     DrawRectangleRec( j->ret, j->cor );
+}
+
+void resetarDesenhoJogador( Jogador *jogador, float alturaTela, float larguratela ) {
+    jogador->velocidadeAtual = jogador->velocidadeBase;
+    jogador->ret.x = larguratela / 2 - jogador->ret.width / 2;
+    jogador->ret.y = alturaTela - 3 * jogador->ret.height;
 }

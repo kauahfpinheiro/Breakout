@@ -18,3 +18,4 @@ typedef struct Bolinha {
 
 void atualizarBolinha( Bolinha *bolinha, float delta, estado *e );
 void desenharBolinha( Bolinha *bolinha );
+void resetarDesenhoBola( Bolinha *bolinha, float tela, int jogadorY, int larguraJ );

@@ -21,3 +21,4 @@ void entradaJogador( Jogador *j );
 void atualizarJogador( Jogador *j, float delta );
 void desenharJogador( Jogador *j );
 void impactoJogador( Jogador *j, Bolinha *b);
+void resetarDesenhoJogador( Jogador *jogador, float alturaTela, float larguratela );
