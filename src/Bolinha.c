@@ -41,3 +41,9 @@ void atualizarBolinha( Bolinha *bolinha, float delta, estado *e ) {
 void desenharBolinha( Bolinha *bolinha ) {
     DrawCircleV( bolinha->centro, bolinha->raio, bolinha->cor );
 }
+void resetarDesenhoBola( Bolinha *bolinha, float tela, int jogadorY, int larguraJ ) {
+    bolinha->centro.x = tela / 2;
+    bolinha->centro.y = jogadorY - larguraJ;        
+    bolinha->vel.x = 200;
+    bolinha->vel.y = -200;
+}

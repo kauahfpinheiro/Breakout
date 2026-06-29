@@ -134,15 +134,8 @@ void updateGameWorld( GameWorld *gw, float delta ) {
         atualizarBolinha( &gw->bolinha, delta, &gw->estadoAtual );
     }
     if (  gw->estadoAtual == dano  ) {
-      
-        gw->jogador.velocidadeAtual = gw->jogador.velocidadeBase;
-        gw->jogador.ret.x = GetScreenWidth() / 2 - gw->larguraJogador / 2;
-        gw->jogador.ret.y = GetScreenHeight() - 3 * gw->alturaJogador;
-
-        gw->bolinha.centro.x = GetScreenWidth() / 2;
-        gw->bolinha.centro.y = gw->jogador.ret.y - gw->jogador.ret.width;        
-        gw->bolinha.vel.x = 200;
-        gw->bolinha.vel.y = -200;
+        resetarDesenhoJogador( &gw->jogador, GetScreenHeight(), GetScreenWidth() );
+        resetarDesenhoBola( &gw->bolinha, GetScreenWidth(), gw->jogador.ret.y, gw->larguraJogador );
     }
 
     resolverColisaoBolinhaAlvos( &gw->bolinha, gw->alvos, gw->lin * gw->col );
@@ -166,6 +159,8 @@ void drawGameWorld( GameWorld *gw ) {
 }
 
 void resolverColisaoBolinhaAlvos( Bolinha *b, Alvo *alvos, int quantidade ) {
+
+    float multiplicadorPorHit = 1.5f;
 
     for ( int i = 0; i < quantidade; i++ ) {
 
@@ -197,7 +192,7 @@ void resolverColisaoBolinhaAlvos( Bolinha *b, Alvo *alvos, int quantidade ) {
                 } else {
                     b->centro.x = alvo->ret.x + alvo->ret.width + b->raio;  // sai pela direita
                 }
-                b->vel.x = -b->vel.x;
+                b->vel.x = -b->vel.x * multiplicadorPorHit;
 
             } else {
 
@@ -207,7 +202,7 @@ void resolverColisaoBolinhaAlvos( Bolinha *b, Alvo *alvos, int quantidade ) {
                 } else {
                     b->centro.y = alvo->ret.y + alvo->ret.height + b->raio;  // sai por baixo
                 }
-                b->vel.y = -b->vel.y;
+                b->vel.y = -b->vel.y * multiplicadorPorHit;
 
             }
 

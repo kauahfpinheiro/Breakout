@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdlib.h>
 #include <math.h>
 
@@ -78,4 +79,10 @@ void impactoJogador( Jogador *j, Bolinha *b ) {
  */
 void desenharJogador( Jogador *j ) {
     DrawRectangleRec( j->ret, j->cor );
+}
+
+void resetarDesenhoJogador( Jogador *jogador, float alturaTela, float larguratela ) {
+    jogador->velocidadeAtual = jogador->velocidadeBase;
+    jogador->ret.x = larguratela / 2 - jogador->ret.width / 2;
+    jogador->ret.y = alturaTela - 3 * jogador->ret.height;
 }
