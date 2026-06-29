@@ -20,13 +20,14 @@
 #include "Jogador.h"
 #include "Estado.h"
 #include "ResourceManager.h"
+#include "Pontuacao.h"
 
 /**
  * Resolve a colisão entre a bolinha "b" com os alvos da partida.
  * Ao colidir com um alvo a bolinha é reposicionada, o alvo em questão
  * perde um ponto de hp e o jogador deve ganhar alguma quantidade de pontos.
  */
-void resolverColisaoBolinhaAlvos( Bolinha *b, Alvo *alvos, int quantidade );
+void resolverColisaoBolinhaAlvos( Bolinha *b, Alvo *alvos, int quantidade, Pontuacao *p);
 
 /**
  * @brief Creates a dinamically allocated GameWorld struct instance.
@@ -47,7 +48,20 @@ GameWorld *createGameWorld( void ) {
         },
         .velocidadeBase = 200,
         .velocidadeAtual = 0,
-        .cor = WHITE
+        .cor = WHITE,
+    };
+    
+
+    gw->pontuacao = (Pontuacao) {
+
+        .valorPorAlvo = 10,
+        .ganhoPorHit = 0.01f,
+
+        .pos = {
+            .x = GetScreenWidth() - 140,
+            .y = 10,
+        }
+        
     };
 
     gw->bolinha = (Bolinha) {
@@ -126,9 +140,10 @@ void destroyGameWorld( GameWorld *gw ) {
  * @brief Reads user input and updates the state of the game.
  */
 void updateGameWorld( GameWorld *gw, float delta ) {
+
+
     entradaJogador( &gw->jogador );
     atualizarEstados ( &gw->estadoAtual );
-
     if ( gw->estadoAtual == emJogo ) {
         atualizarJogador( &gw->jogador, delta );
         atualizarBolinha( &gw->bolinha, delta, &gw->estadoAtual );
@@ -138,7 +153,7 @@ void updateGameWorld( GameWorld *gw, float delta ) {
         resetarDesenhoBola( &gw->bolinha, GetScreenWidth(), gw->jogador.ret.y, gw->larguraJogador );
     }
 
-    resolverColisaoBolinhaAlvos( &gw->bolinha, gw->alvos, gw->lin * gw->col );
+    resolverColisaoBolinhaAlvos( &gw->bolinha, gw->alvos, gw->lin * gw->col, &gw->pontuacao );
     impactoJogador( &gw->jogador, &gw->bolinha );
 }
 
@@ -153,14 +168,15 @@ void drawGameWorld( GameWorld *gw ) {
     desenharJogador( &gw->jogador );
     desenharBolinha( &gw->bolinha );
     desenharAlvos( gw->alvos, gw->lin * gw->col );
+    desenharPontuacao( &gw->pontuacao );
 
     EndDrawing();
 
 }
 
-void resolverColisaoBolinhaAlvos( Bolinha *b, Alvo *alvos, int quantidade ) {
+void resolverColisaoBolinhaAlvos( Bolinha *b, Alvo *alvos, int quantidade, Pontuacao *p) {
 
-    float multiplicadorPorHit = 1.5f;
+    
 
     for ( int i = 0; i < quantidade; i++ ) {
 
@@ -172,6 +188,9 @@ void resolverColisaoBolinhaAlvos( Bolinha *b, Alvo *alvos, int quantidade ) {
 
             // perde um ponto de vida
             alvo->hp--;
+
+            pontos( p );
+            atualizarMult( p );
 
             // reposicionamento e espelhamento apropriado da velocidade da bolinha
             
@@ -192,7 +211,7 @@ void resolverColisaoBolinhaAlvos( Bolinha *b, Alvo *alvos, int quantidade ) {
                 } else {
                     b->centro.x = alvo->ret.x + alvo->ret.width + b->raio;  // sai pela direita
                 }
-                b->vel.x = -b->vel.x * multiplicadorPorHit;
+                b->vel.x = -b->vel.x * p->multVel;
 
             } else {
 
@@ -202,7 +221,7 @@ void resolverColisaoBolinhaAlvos( Bolinha *b, Alvo *alvos, int quantidade ) {
                 } else {
                     b->centro.y = alvo->ret.y + alvo->ret.height + b->raio;  // sai por baixo
                 }
-                b->vel.y = -b->vel.y * multiplicadorPorHit;
+                b->vel.y = -b->vel.y * p->multVel;
 
             }
 

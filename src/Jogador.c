@@ -1,6 +1,5 @@
 #include <math.h>
 #include <stdlib.h>
-#include <math.h>
 
 #include "raylib/raylib.h"
 
