@@ -28,6 +28,8 @@
  * perde um ponto de hp e o jogador deve ganhar alguma quantidade de pontos.
  */
 void resolverColisaoBolinhaAlvos( Bolinha *b, Alvo *alvos, int quantidade, Pontuacao *p);
+static int todosAlvosDestruidos( Alvo *alvos, int quantidade );
+static void resetGameWorld( GameWorld *gw );
 
 /**
  * @brief Creates a dinamically allocated GameWorld struct instance.
@@ -48,6 +50,7 @@ GameWorld *createGameWorld( void ) {
         },
         .velocidadeBase = 200,
         .velocidadeAtual = 0,
+        .vidas = 3,
         .cor = WHITE,
     };
     
@@ -133,28 +136,57 @@ GameWorld *createGameWorld( void ) {
  * @brief Destroys a GameWindow object and its dependecies.
  */
 void destroyGameWorld( GameWorld *gw ) {
-    free( gw );
+    if ( gw != NULL ) {
+        free( gw->alvos );
+        free( gw );
+    }
+}
+
+static void resetGameWorld( GameWorld *gw ) {
+    gw->jogador.vidas = 3;
+    gw->jogador.velocidadeAtual = 0;
+    resetarDesenhoJogador( &gw->jogador, GetScreenHeight(), GetScreenWidth() );
+    resetarDesenhoBola( &gw->bolinha, GetScreenWidth(), gw->jogador.ret.y, gw->larguraJogador );
+
+    gw->pontuacao.pontos = 0;
+    gw->pontuacao.multVel = 1.0f;
+
+    for ( int i = 0; i < gw->lin * gw->col; i++ ) {
+        gw->alvos[i].hp = 1;
+    }
+
+    gw->estadoAtual = inicio;
 }
 
 /**
  * @brief Reads user input and updates the state of the game.
  */
-void updateGameWorld( GameWorld *gw, float delta ) {
 
+void updateGameWorld( GameWorld *gw, float delta ) {
 
     entradaJogador( &gw->jogador );
     atualizarEstados ( &gw->estadoAtual );
     if ( gw->estadoAtual == emJogo ) {
         atualizarJogador( &gw->jogador, delta );
         atualizarBolinha( &gw->bolinha, delta, &gw->estadoAtual );
+        resolverColisaoBolinhaAlvos( &gw->bolinha, gw->alvos, gw->lin * gw->col, &gw->pontuacao );
+        impactoJogador( &gw->jogador, &gw->bolinha );
     }
     if (  gw->estadoAtual == dano  ) {
-        resetarDesenhoJogador( &gw->jogador, GetScreenHeight(), GetScreenWidth() );
-        resetarDesenhoBola( &gw->bolinha, GetScreenWidth(), gw->jogador.ret.y, gw->larguraJogador );
+        gw->jogador.vidas--;
+
+        if ( gw->jogador.vidas <= 0 ) {
+            gw->estadoAtual = gameOver;
+        } else {
+            resetarDesenhoJogador( &gw->jogador, GetScreenHeight(), GetScreenWidth() );
+            resetarDesenhoBola( &gw->bolinha, GetScreenWidth(), gw->jogador.ret.y, gw->larguraJogador );
+            gw->estadoAtual = inicio;
+        }
     }
 
-    resolverColisaoBolinhaAlvos( &gw->bolinha, gw->alvos, gw->lin * gw->col, &gw->pontuacao );
-    impactoJogador( &gw->jogador, &gw->bolinha );
+    if ( gw->estadoAtual == emJogo && todosAlvosDestruidos( gw->alvos, gw->lin * gw->col ) ) {
+        gw->estadoAtual = vitoria;
+    }
 }
 
 /**
@@ -170,13 +202,57 @@ void drawGameWorld( GameWorld *gw ) {
     desenharAlvos( gw->alvos, gw->lin * gw->col );
     desenharPontuacao( &gw->pontuacao );
 
+    char textoVidas[32];
+    sprintf( textoVidas, "VIDAS: %d", gw->jogador.vidas );
+    int tamanhoFonteVidas = 20;
+    int larguraTextoVidas = MeasureText( textoVidas, tamanhoFonteVidas );
+    DrawText( textoVidas, GetScreenWidth() - larguraTextoVidas - 20, 40, tamanhoFonteVidas, WHITE );
+
+    if ( gw->estadoAtual == inicio ) {
+        const char *mensagem = "Pressione UP para iniciar";
+        DrawText( mensagem, GetScreenWidth() / 2 - MeasureText( mensagem, 20 ) / 2, GetScreenHeight() / 2, 20, LIGHTGRAY );
+    }
+
+    if ( gw->estadoAtual == gameOver ) {
+        const char *titulo = "DERROTA";
+        char textoPontos[64];
+        sprintf( textoPontos, "PONTOS: %d", gw->pontuacao.pontos );
+
+        DrawRectangle( 0, 0, GetScreenWidth(), GetScreenHeight(), Fade( BLACK, 0.75f ) );
+        DrawText( titulo, GetScreenWidth() / 2 - MeasureText( titulo, 60 ) / 2, GetScreenHeight() / 2 - 80, 60, RED );
+        DrawText( textoPontos, GetScreenWidth() / 2 - MeasureText( textoPontos, 30 ) / 2, GetScreenHeight() / 2, 30, WHITE );
+        DrawText( "Pressione R para reiniciar", GetScreenWidth() / 2 - MeasureText( "Pressione R para reiniciar", 20 ) / 2, GetScreenHeight() / 2 + 60, 20, LIGHTGRAY );
+    }
+
+    if ( gw->estadoAtual == vitoria ) {
+        const char *titulo = "VITÓRIA";
+        char textoPontos[64];
+        sprintf( textoPontos, "PONTOS: %d", gw->pontuacao.pontos );
+
+        DrawRectangle( 0, 0, GetScreenWidth(), GetScreenHeight(), Fade( BLACK, 0.75f ) );
+        DrawText( titulo, GetScreenWidth() / 2 - MeasureText( titulo, 60 ) / 2, GetScreenHeight() / 2 - 80, 60, GREEN );
+        DrawText( textoPontos, GetScreenWidth() / 2 - MeasureText( textoPontos, 30 ) / 2, GetScreenHeight() / 2, 30, WHITE );
+        DrawText( "Pressione R para reiniciar", GetScreenWidth() / 2 - MeasureText( "Pressione R para reiniciar", 20 ) / 2, GetScreenHeight() / 2 + 60, 20, LIGHTGRAY );
+    }
+
+    if ( ( gw->estadoAtual == gameOver || gw->estadoAtual == vitoria ) && IsKeyPressed( KEY_R ) ) {
+        resetGameWorld( gw );
+    }
+
     EndDrawing();
 
 }
 
-void resolverColisaoBolinhaAlvos( Bolinha *b, Alvo *alvos, int quantidade, Pontuacao *p) {
+static int todosAlvosDestruidos( Alvo *alvos, int quantidade ) {
+    for ( int i = 0; i < quantidade; i++ ) {
+        if ( alvos[i].hp > 0 ) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
-    
+void resolverColisaoBolinhaAlvos( Bolinha *b, Alvo *alvos, int quantidade, Pontuacao *p) {
 
     for ( int i = 0; i < quantidade; i++ ) {
 

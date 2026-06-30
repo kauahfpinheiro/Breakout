@@ -14,7 +14,9 @@ typedef struct Jogador {
     Rectangle ret;
     float velocidadeBase;    // a velocidade que será usada na movimentação (não é alterada)
     float velocidadeAtual;   // a velocidade usada no momento
+    int vidas;
     Color cor;
+    
 
 } Jogador;
 

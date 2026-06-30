@@ -7,6 +7,8 @@ typedef enum Estado {
     emJogo,
     pausado,
     dano,
+    gameOver,
+    vitoria,
 } estado;
 
 
