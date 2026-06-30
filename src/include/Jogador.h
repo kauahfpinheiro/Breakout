@@ -15,6 +15,7 @@ typedef struct Jogador {
     float velocidadeBase;    // a velocidade que será usada na movimentação (não é alterada)
     float velocidadeAtual;   // a velocidade usada no momento
     Color cor;
+
 } Jogador;
 
 void entradaJogador( Jogador *j );
@@ -22,3 +23,4 @@ void atualizarJogador( Jogador *j, float delta );
 void desenharJogador( Jogador *j );
 void impactoJogador( Jogador *j, Bolinha *b);
 void resetarDesenhoJogador( Jogador *jogador, float alturaTela, float larguratela );
+

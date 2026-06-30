@@ -11,12 +11,14 @@
 #include "Bolinha.h"
 #include "Jogador.h"
 #include "Estado.h"
+#include "Pontuacao.h"
 
 typedef struct GameWorld {
     Jogador jogador;
     Bolinha bolinha;
     Alvo *alvos;
     estado estadoAtual;
+    Pontuacao pontuacao;
 
 
     int lin;
